@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procesador de expresiones aritmeticas</title>
+</head>
+<body>
+    <script>
+        let i = 0;
+        class Nodo{
+            constructor(data){
+                this.data = data;
+                this.izquierda = null;
+                this.derecha = null;
+            }
+        }
+        let nodo = new Nodo();
+
+        class Arbol{
+        constructor(){
+            this.pre = "";
+            this.post = "";
+            this.raiz = null;
+        }
+
+        separador(data){
+            let arreglo = [];
+            for(let i = 0; i < data.length; i++){
+                nodo = new Nodo(data[i]);
+                arreglo.push(nodo);
+            }
+            return arreglo;
+            }
+
+        generarArbol(expresion){
+        let arreglo = this.separador(expresion);
+        let raiz = null;
+        let nodo_der = null;
+        let nodo_izq = null;
+        while(arreglo[i] != undefined){
+            if(arreglo[i].data == "*" || arreglo[i].data == "/"){
+                nodo_izq = arreglo[i-1];
+                nodo_der = arreglo[i+1];
+                raiz = arreglo[i];
+                this.agregar(raiz, nodo_izq, nodo_der);
+                arreglo[i-1] = raiz;
+                for(let x = i; x < arreglo.length; x++){
+                    arreglo[x] = arreglo[x+2];
+                    if(arreglo[x+2] == undefined){
+                        x = arreglo.length;
+                    }
+                }
+                i--;
+            }
+            i++;
+        }
+        i = 0;
+        while(arreglo[i] != undefined){
+            if(arreglo[i].data == "+" || arreglo[i].data == "-"){
+                nodo_izq = arreglo[i-1];
+                nodo_der = arreglo[i+1];
+                raiz = arreglo[i];
+                this.agregar(raiz, nodo_izq, nodo_der);
+                arreglo[i-1] = raiz;
+                for(let x = i; x < arreglo.length; x++){
+                    arreglo[x] = arreglo[x+2];
+                    if(arreglo[x+2] == undefined){
+                        x = arreglo.length;
+                    }
+                }
+                i--;
+            }
+            i++;
+        }
+        this.raiz = arreglo[0];
+        return [this.postOrder(),this.preOrder(), this.raiz];
+        }
+
+        agregar(nuevo, izquierda, derecha){
+            nuevo.izquierda = izquierda;
+            nuevo.derecha = derecha;
+            return true;
+        }
+
+        preOrder(){
+        this.pre = "";
+        if(this.raiz == null){
+            return "";
+        } else {
+            this._preOrder(this.raiz)
+        }
+        return this.pre;
+        }
+
+        _preOrder(raiz){
+        this.pre += raiz.data;
+        if(raiz.izquierda != null){
+            this._preOrder(raiz.izquierda);
+        } 
+        if(raiz.derecha != null){
+            this._preOrder(raiz.derecha);
+        }
+        }
+        postOrder(){
+        this.post = "";
+        if(this.raiz == null){
+            return "";
+        } else {
+        this._postOrder(this.raiz)
+        }
+        return this.post;
+        }
+        _postOrder(raiz){
+        if(raiz.izquierda != null){
+            this._postOrder(raiz.izquierda);
+        } 
+        if(raiz.derecha != null){
+            this._postOrder(raiz.derecha);
+        }
+        this.post += raiz.data;
+        }
+        }
+        const miArbol = new Arbol();
+        // inOrder(){
+
+        // }
+        class Calculadora{
+        constructor(){
+        this.numeros = [];
+        }
+
+        resultadoPre(preorder){
+        this.numeros = [];
+        let preNDer = 0;
+        let preNIzq = 0;
+        for(let i = preorder.length-1; i >= 0; i--){
+            if(preorder[i] == "+" || preorder[i] == "-" || preorder[i] == "/" || preorder[i] == "*"){
+                preNIzq = Number(this.numeros.pop());
+                preNDer = Number(this.numeros.pop());
+                switch(preorder[i]){
+                    case "+":
+                        this.numeros.push(preNIzq + preNDer);
+                        break;
+                    case "-":
+                        this.numeros.push(preNIzq - preNDer);
+                        break;
+                    case "/":
+                        this.numeros.push(preNIzq / preNDer);
+                        break;
+                    case "*":
+                        this.numeros.push(preNIzq * preNDer);
+                        break;
+                } 
+            } else{
+                this.numeros.push(preorder[i]);
+            }
+        }
+        return this.numeros[0];
+        }
+
+        resultadoPost(postorder){
+            this.numeros = [];
+            let postNDer = 0;
+            let postNIzq = 0;
+            for(let i = 0; i < postorder.length; i++){
+                if(postorder[i] == "+" || postorder[i] == "-" || postorder[i] == "/" || postorder[i] == "*"){
+                    postNDer = Number(this.numeros.pop());
+                    postNIzq = Number(this.numeros.pop());
+                    switch(postorder[i]){
+                        case "+":
+                            this.numeros.push(postNIzq + postNDer);
+                            break;
+                        case "-":
+                            this.numeros.push(postNIzq - postNDer);
+                            break;
+                        case "/":
+                            this.numeros.push(postNIzq / postNDer);
+                            break;
+                        case "*":
+                            this.numeros.push(postNIzq * postNDer);
+                            break;
+                    } 
+                } else{
+                    this.numeros.push(postorder[i]);
+                }
+            }
+        return this.numeros[0];
+        }
+        }
+
+        const miCalculadora = new Calculadora();
+        [post,pre,raiz] = miArbol.generarArbol('4/3*5-3*2'); // Aqui se ingresa la expresion
+        let atajo = ['PreOrder: ', 'PostOrder: ', 'Resultado Pre: ', 'Resultado Post: ', pre, post, miCalculadora.resultadoPre(pre), miCalculadora.resultadoPost(post)]
+        for (let i = 0, j = 4; i < atajo.length / 2; i++, j++) {
+            console.log(atajo[i]+atajo[j]);
+        }
+    </script>
+</body>
+</html>
